@@ -16,3 +16,5 @@ venv/
 *.bin
 #output 较小可以保留
 version.py
+**/GPU
+**/GPU_v

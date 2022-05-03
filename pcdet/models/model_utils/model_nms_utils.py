@@ -2,9 +2,15 @@ import torch
 
 from ...ops.iou3d_nms import iou3d_nms_utils
 
+####################
+#原始代码,添加了过滤后的返回
+####################
 
+#nms代码被正确使用了
 def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
+
     src_box_scores = box_scores
+    original_nms=[]#添加部分
     if score_thresh is not None:
         scores_mask = (box_scores >= score_thresh)
         box_scores = box_scores[scores_mask]
@@ -21,8 +27,9 @@ def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
 
     if score_thresh is not None:
         original_idxs = scores_mask.nonzero().view(-1)
+        original_nms=original_idxs#添加部分
         selected = original_idxs[selected]
-    return selected, src_box_scores[selected]
+    return selected, src_box_scores[selected],original_nms
 
 
 def multi_classes_nms(cls_scores, box_preds, nms_config, score_thresh=None):

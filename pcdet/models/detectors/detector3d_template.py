@@ -8,7 +8,12 @@ from ...utils.spconv_utils import find_all_spconv_keys
 from .. import backbones_2d, backbones_3d, dense_heads, roi_heads
 from ..backbones_2d import map_to_bev
 from ..backbones_3d import pfe, vfe
-from ..model_utils import model_nms_utils
+
+from ..model_utils import model_nms_utils #原始nms
+# import pcdet.models.model_utils.fuzzy_nms.model_nms_utils_cpp as model_nms_utils #fuzzy-nms
+
+import time
+import pickle
 
 
 class Detector3DTemplate(nn.Module):
@@ -196,6 +201,7 @@ class Detector3DTemplate(nn.Module):
         batch_size = batch_dict['batch_size']
         recall_dict = {}
         pred_dicts = []
+        nms_dicts=[]
         for index in range(batch_size):
             if batch_dict.get('batch_index', None) is not None:
                 assert batch_dict['batch_box_preds'].shape.__len__() == 2
@@ -254,19 +260,37 @@ class Detector3DTemplate(nn.Module):
                     label_preds = batch_dict[label_key][index]
                 else:
                     label_preds = label_preds + 1
-                selected, selected_scores = model_nms_utils.class_agnostic_nms(
+                
+                # start = time.time()#查看运行时间
+                #这里用的是原始nms
+                selected, selected_scores,selected_nms = model_nms_utils.class_agnostic_nms(
                     box_scores=cls_preds, box_preds=box_preds,
                     nms_config=post_process_cfg.NMS_CONFIG,
                     score_thresh=post_process_cfg.SCORE_THRESH
                 )
+                # end = time.time()
+                # print("Running time: %s seconds"%(end - start))
 
-                if post_process_cfg.OUTPUT_RAW_SCORE:
+                if post_process_cfg.OUTPUT_RAW_SCORE:#该部分不使用
                     max_cls_preds, _ = torch.max(src_cls_preds, dim=-1)
                     selected_scores = max_cls_preds[selected]
 
                 final_scores = selected_scores
                 final_labels = label_preds[selected]
                 final_boxes = box_preds[selected]
+
+                #添加部分开始
+                nms_scores=cls_preds[selected_nms]
+                nms_labels=label_preds[selected_nms]
+                nms_boxes=box_preds[selected_nms]
+                
+            nms_dict = {
+                'nms_boxes': nms_boxes,
+                'nms_scores': nms_scores,
+                'nms_labels': nms_labels}
+                
+            nms_dicts.append(nms_dict)
+            #添加部分到此结束
 
             recall_dict = self.generate_recall_record(
                 box_preds=final_boxes if 'rois' not in batch_dict else src_box_preds,
@@ -281,7 +305,7 @@ class Detector3DTemplate(nn.Module):
             }
             pred_dicts.append(record_dict)
 
-        return pred_dicts, recall_dict
+        return pred_dicts, recall_dict,nms_dicts
 
     @staticmethod
     def generate_recall_record(box_preds, recall_dict, batch_index, data_dict=None, thresh_list=None):

@@ -5,6 +5,7 @@ import torch.nn.functional as F
 
 from ...utils import box_coder_utils, common_utils, loss_utils
 from ..model_utils.model_nms_utils import class_agnostic_nms
+
 from .target_assigner.proposal_target_layer import ProposalTargetLayer
 
 
@@ -86,7 +87,8 @@ class RoIHeadTemplate(nn.Module):
             if nms_config.MULTI_CLASSES_NMS:
                 raise NotImplementedError
             else:
-                selected, selected_scores = class_agnostic_nms(
+                #这里用的是原始nms
+                selected, selected_scores,selected_nms = class_agnostic_nms(
                     box_scores=cur_roi_scores, box_preds=box_preds, nms_config=nms_config
                 )
 

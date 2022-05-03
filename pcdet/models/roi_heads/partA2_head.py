@@ -7,6 +7,7 @@ from ...utils.spconv_utils import spconv
 from .roi_head_template import RoIHeadTemplate
 
 
+
 class PartA2FCHead(RoIHeadTemplate):
     def __init__(self, input_channels, model_cfg, num_class=1, **kwargs):
         super().__init__(num_class=num_class, model_cfg=model_cfg)
@@ -168,6 +169,7 @@ class PartA2FCHead(RoIHeadTemplate):
         Returns:
 
         """
+        #proposal_layer中调用了nms,用来生成感兴趣区域，这里的nms应当是原始nms
         targets_dict = self.proposal_layer(
             batch_dict, nms_config=self.model_cfg.NMS_CONFIG['TRAIN' if self.training else 'TEST']
         )

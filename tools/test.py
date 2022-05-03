@@ -11,12 +11,17 @@ import numpy as np
 import torch
 from tensorboardX import SummaryWriter
 
+from eval_utils import eval_utils_fuzzy #添加部分，用来遍历fuzzy_nms
 from eval_utils import eval_utils
 from pcdet.config import cfg, cfg_from_list, cfg_from_yaml_file, log_config_to_file
 from pcdet.datasets import build_dataloader
 from pcdet.models import build_network
 from pcdet.utils import common_utils
+import warnings
 
+from pcdet.models.model_utils.fuzzy_nms.model_nms_utils_cpp import _init_score_iou #roi使用fuzzy nms时，用来初始化
+
+warnings.filterwarnings("ignore")
 
 def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')
@@ -26,7 +31,7 @@ def parse_config():
     parser.add_argument('--workers', type=int, default=4, help='number of workers for dataloader')
     parser.add_argument('--extra_tag', type=str, default='default', help='extra tag for this experiment')
     parser.add_argument('--ckpt', type=str, default=None, help='checkpoint to start from')
-    parser.add_argument('--launcher', choices=['none', 'pytorch', 'slurm'], default='none')
+    parser.add_argument('--launcher', choices=['none', 'pytorch', 'slurm'], default='none')# 使用的是pytorch架构
     parser.add_argument('--tcp_port', type=int, default=18888, help='tcp port for distrbuted training')
     parser.add_argument('--local_rank', type=int, default=0, help='local rank for distributed training')
     parser.add_argument('--set', dest='set_cfgs', default=None, nargs=argparse.REMAINDER,
@@ -53,13 +58,22 @@ def parse_config():
     return args, cfg
 
 
+
 def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id, dist_test=False):
     # load checkpoint
     model.load_params_from_file(filename=args.ckpt, logger=logger, to_cpu=dist_test)
     model.cuda()
+    # print(next(model.parameters()).device)
 
-    # start evaluation
-    eval_utils.eval_one_epoch(
+    # #原始代码,不进行遍历,但是可以在post_processing中切换nms
+    # _init_score_iou([0.1,0.1,0.2],[0.01,0.6,0.0])#fuzzy-nms使用
+    # eval_utils.eval_one_epoch(
+    #     cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,
+    #     result_dir=eval_output_dir, save_to_file=args.save_to_file
+    # )
+
+    #更改代码，进行fuzzy-nms的遍历
+    eval_utils_fuzzy.eval_one_epoch(
         cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,
         result_dir=eval_output_dir, save_to_file=args.save_to_file
     )
@@ -135,14 +149,13 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
 def main():
     args, cfg = parse_config()
     if args.launcher == 'none':
-        dist_test = False
+        dist_test = False #不设置的情况下为false
         total_gpus = 1
     else:
         total_gpus, cfg.LOCAL_RANK = getattr(common_utils, 'init_dist_%s' % args.launcher)(
             args.tcp_port, args.local_rank, backend='nccl'
         )
         dist_test = True
-
     if args.batch_size is None:
         args.batch_size = cfg.OPTIMIZATION.BATCH_SIZE_PER_GPU
     else:
@@ -197,4 +210,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    with torch.cuda.device(2):
+        main()
+    # main()

@@ -2,16 +2,17 @@
 **build**
 **egg-info**
 **dist**
-data/
+data/kitti/gt_database
 *.pyc
 venv/
 *.idea/
 *.so
+!pcdet/models/model_utils/fuzzy_code/libfuzzy.so
 *.yaml
 *.sh
 *.pth
 *.pkl
 *.zip
 *.bin
-output
+#output 较小可以保留
 version.py

@@ -1,5 +1,5 @@
 from .detector3d_template import Detector3DTemplate
-
+import time
 
 class PointRCNN(Detector3DTemplate):
     def __init__(self, model_cfg, num_class, dataset):
@@ -7,8 +7,11 @@ class PointRCNN(Detector3DTemplate):
         self.module_list = self.build_networks()
 
     def forward(self, batch_dict):
+        # start = time.time()#查看运行时间
         for cur_module in self.module_list:
             batch_dict = cur_module(batch_dict)
+        # end = time.time()
+        # print("model Running time: %s seconds"%(end - start))
 
         if self.training:
             loss, tb_dict, disp_dict = self.get_training_loss()
@@ -18,8 +21,12 @@ class PointRCNN(Detector3DTemplate):
             }
             return ret_dict, tb_dict, disp_dict
         else:
-            pred_dicts, recall_dicts = self.post_processing(batch_dict)
-            return pred_dicts, recall_dicts
+            # start = time.time()#查看运行时间
+            pred_dicts, recall_dicts ,nms_dicts = self.post_processing(batch_dict)
+            # end = time.time()
+            # print("post processing Running time: %s seconds"%(end - start))
+            # return pred_dicts, recall_dicts#原始
+            return pred_dicts, recall_dicts,nms_dicts#更改
 
     def get_training_loss(self):
         disp_dict = {}

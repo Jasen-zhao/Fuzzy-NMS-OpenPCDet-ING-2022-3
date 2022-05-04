@@ -20,7 +20,6 @@ from pcdet.utils import common_utils
 import warnings
 
 from pcdet.models.model_utils.fuzzy_nms.model_nms_utils_cpp import _init_score_iou #roi使用fuzzy nms时，用来初始化
-from pcdet.models.model_utils.fuzzy_code.model_nms_utils_more import _init_soft_nms_score #soft nms遍历
 
 warnings.filterwarnings("ignore")
 

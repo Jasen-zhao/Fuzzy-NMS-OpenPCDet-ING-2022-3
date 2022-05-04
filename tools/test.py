@@ -74,7 +74,7 @@ def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id
     # )
 
     #soft-nms遍历
-    for i in np.arange(0.0,0.5,0.05):
+    for i in np.arange(0.05,0.5,0.05):
         _init_soft_nms_score(i) #soft nms遍历
         eval_utils.eval_one_epoch(
             cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,

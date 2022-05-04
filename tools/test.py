@@ -20,6 +20,7 @@ from pcdet.utils import common_utils
 import warnings
 
 from pcdet.models.model_utils.fuzzy_nms.model_nms_utils_cpp import _init_score_iou #roi使用fuzzy nms时，用来初始化
+from pcdet.models.model_utils.fuzzy_code.model_nms_utils_more import _init_soft_nms_score #soft nms遍历
 
 warnings.filterwarnings("ignore")
 
@@ -67,11 +68,23 @@ def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id
 
     # #原始代码,不进行遍历,但是可以在post_processing中切换nms
     # _init_score_iou([0.1,0.1,0.3],[0.01,0.6,0.0])#fuzzy-nms使用
-    eval_utils.eval_one_epoch(
-        cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,
-        result_dir=eval_output_dir, save_to_file=args.save_to_file
-    )
+    # eval_utils.eval_one_epoch(
+    #     cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,
+    #     result_dir=eval_output_dir, save_to_file=args.save_to_file
+    # )
 
+    #soft-nms遍历
+    for i in np.arange(0.0,0.5,0.05):
+        _init_soft_nms_score(i) #soft nms遍历
+        eval_utils.eval_one_epoch(
+            cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,
+            result_dir=eval_output_dir, save_to_file=args.save_to_file
+            )
+        print("####################################################")
+        print("####################################################")
+        print("上一个的soft nms score = ",i)
+        print("####################################################")
+        print("####################################################")
     #更改代码，进行fuzzy-nms的遍历
     # eval_utils_fuzzy.eval_one_epoch(
     #     cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,
@@ -210,6 +223,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with torch.cuda.device(4):
+    with torch.cuda.device(1):
         main()
     # main()

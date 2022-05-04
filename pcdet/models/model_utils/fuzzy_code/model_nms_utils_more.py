@@ -6,6 +6,11 @@ from ....ops.iou3d_nms import iou3d_nms_utils
 #nms、soft-nms、hard-nms
 ####################
 
+def _init_soft_nms_score(score_iou):  # 初始化
+    global _score_iou
+    _score_iou=score_iou
+
+
 def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
     src_box_scores = box_scores
     if score_thresh is not None:
@@ -18,13 +23,13 @@ def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
     if box_scores.shape[0] > 0:
         box_scores_nms, indices = torch.topk(box_scores, k=min(nms_config.NMS_PRE_MAXSIZE, box_scores.shape[0]))#topk:取数组的前k个元素进行排序
         boxes_for_nms = box_preds[indices]
-        #NMS
-        keep_idx, selected_scores = getattr(iou3d_nms_utils, nms_config.NMS_TYPE)(
-                boxes_for_nms[:, 0:7], box_scores_nms, nms_config.NMS_THRESH, **nms_config)
+        #hard NMS
+        # keep_idx, selected_scores = getattr(iou3d_nms_utils, nms_config.NMS_TYPE)(
+        #         boxes_for_nms[:, 0:7], box_scores_nms, nms_config.NMS_THRESH, **nms_config)
         
         #soft-nms
-        # keep_idx, selected_scores = getattr(iou3d_nms_utils, "soft_nms")(
-        #         boxes_for_nms[:, 0:7], box_scores_nms, 0.1)#最后一个参数是score—nms
+        keep_idx, selected_scores = getattr(iou3d_nms_utils, "soft_nms")(
+                boxes_for_nms[:, 0:7], box_scores_nms, _score_iou)#最后一个参数是score—nms
         
         #hard-nms-Diou (Diou:-1~1)
         # keep_idx, selected_scores = getattr(iou3d_nms_utils, "hard_nms_Diou")(

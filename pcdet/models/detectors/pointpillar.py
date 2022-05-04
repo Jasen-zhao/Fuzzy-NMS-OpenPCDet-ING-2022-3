@@ -6,6 +6,7 @@ class PointPillar(Detector3DTemplate):
     def __init__(self, model_cfg, num_class, dataset):
         super().__init__(model_cfg=model_cfg, num_class=num_class, dataset=dataset)
         self.module_list = self.build_networks()
+        self.times=0
 
     def forward(self, batch_dict):
         # start = time.time()#查看运行时间
@@ -23,10 +24,11 @@ class PointPillar(Detector3DTemplate):
             return ret_dict, tb_dict, disp_dict
         else:
 
-            # start = time.time()#查看运行时间
+            start = time.time()#查看运行时间
             pred_dicts, recall_dicts,nms_dicts = self.post_processing(batch_dict)
-            # end = time.time()
-            # print("post process Running time: %s seconds"%(end - start))
+            end = time.time()
+            self.times+=end-start
+            # print("post process Running time: %s seconds"%(self.times))
             # return pred_dicts, recall_dicts#原始
             return pred_dicts, recall_dicts,nms_dicts#更改
 

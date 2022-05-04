@@ -9,8 +9,9 @@ from .. import backbones_2d, backbones_3d, dense_heads, roi_heads
 from ..backbones_2d import map_to_bev
 from ..backbones_3d import pfe, vfe
 
-from ..model_utils import model_nms_utils #原始nms
+# from ..model_utils import model_nms_utils #原始nms
 # import pcdet.models.model_utils.fuzzy_nms.model_nms_utils_cpp as model_nms_utils #fuzzy-nms
+import pcdet.models.model_utils.fuzzy_code.model_nms_utils_more as model_nms_utils #多种nms测试
 
 import time
 import pickle

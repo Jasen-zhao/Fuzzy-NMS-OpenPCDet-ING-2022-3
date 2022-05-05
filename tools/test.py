@@ -210,6 +210,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with torch.cuda.device(1):
+    with torch.cuda.device(2):
         main()
     # main()

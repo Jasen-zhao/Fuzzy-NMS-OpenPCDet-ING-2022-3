@@ -10,8 +10,8 @@ from ....ops.iou3d_nms import iou3d_nms_utils
 def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
     src_box_scores = box_scores
     if score_thresh is not None:
-        scores_mask = (box_scores >= score_thresh)#原始
-        # scores_mask = (box_scores >= 0.01)#为soft-nms改
+        # scores_mask = (box_scores >= score_thresh)#原始
+        scores_mask = (box_scores >= 0.01)#为soft-nms改
         box_scores = box_scores[scores_mask]
         box_preds = box_preds[scores_mask]
 
@@ -25,7 +25,7 @@ def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
         
         #soft-nms
         keep_idx, selected_scores = getattr(iou3d_nms_utils, "soft_nms")(
-                boxes_for_nms[:, 0:7], box_scores_nms, 0.1)#最后一个参数是score—nms
+                boxes_for_nms[:, 0:7], box_scores_nms, 0.3)#最后一个参数是score—nms
         
         #hard-nms-Diou (Diou:-1~1)
         # keep_idx, selected_scores = getattr(iou3d_nms_utils, "hard_nms_Diou")(

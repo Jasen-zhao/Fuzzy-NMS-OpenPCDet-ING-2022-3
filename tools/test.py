@@ -66,7 +66,7 @@ def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id
     # print(next(model.parameters()).device)
 
     # #原始代码,不进行遍历,但是可以在post_processing中切换nms
-    # _init_score_iou([0.1,0.1,0.3],[0.01,0.6,0.0])#fuzzy-nms使用
+    _init_score_iou([0.1,0.1,0.3],[0.01,0.6,0.0])#fuzzy-nms使用
     eval_utils.eval_one_epoch(
         cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,
         result_dir=eval_output_dir, save_to_file=args.save_to_file
@@ -210,6 +210,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with torch.cuda.device(2):
+    with torch.cuda.device(1):
         main()
     # main()

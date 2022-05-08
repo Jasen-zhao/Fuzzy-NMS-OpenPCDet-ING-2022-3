@@ -282,7 +282,7 @@ class CenterHead(nn.Module):
             for k, final_dict in enumerate(final_pred_dicts):
                 final_dict['pred_labels'] = self.class_id_mapping_each_head[idx][final_dict['pred_labels'].long()]
                 if post_process_cfg.NMS_CONFIG.NMS_TYPE != 'circle_nms':
-                    selected, selected_scores = model_nms_utils.class_agnostic_nms(
+                    selected, selected_scores,dix = model_nms_utils.class_agnostic_nms(
                         box_scores=final_dict['pred_scores'], box_preds=final_dict['pred_boxes'],
                         nms_config=post_process_cfg.NMS_CONFIG,
                         score_thresh=None

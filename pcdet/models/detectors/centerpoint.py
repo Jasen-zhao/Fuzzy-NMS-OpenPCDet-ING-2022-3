@@ -9,7 +9,7 @@ class CenterPoint(Detector3DTemplate):
 
     def forward(self, batch_dict):
         for cur_module in self.module_list:
-            batch_dict = cur_module(batch_dict)
+            batch_dict = cur_module(batch_dict) #这里调用了center_head
         
         if self.training:
             loss, tb_dict, disp_dict = self.get_training_loss()

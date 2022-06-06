@@ -69,7 +69,7 @@ def eval_one_epoch(cfg, model, dataloader, epoch_id, logger, dist_test=False, sa
 
     if cfg.LOCAL_RANK == 0:
         progress_bar.close()
-    print("3769 samples post process Running time: %s seconds"%(model.times))
+    # print("3769 samples post process Running time: %s seconds"%(model.times))
 
     if dist_test:
         rank, world_size = common_utils.get_dist_info()

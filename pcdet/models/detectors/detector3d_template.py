@@ -285,13 +285,13 @@ class Detector3DTemplate(nn.Module):
                 nms_labels=label_preds[selected_nms]
                 nms_boxes=box_preds[selected_nms]
                 
-            nms_dict = {
-                'nms_boxes': nms_boxes,
-                'nms_scores': nms_scores,
-                'nms_labels': nms_labels}
-                
-            nms_dicts.append(nms_dict)
-            #添加部分到此结束
+                nms_dict = {
+                    'nms_boxes': nms_boxes,
+                    'nms_scores': nms_scores,
+                    'nms_labels': nms_labels}
+                    
+                nms_dicts.append(nms_dict)
+                #添加部分到此结束
 
             recall_dict = self.generate_recall_record(
                 box_preds=final_boxes if 'rois' not in batch_dict else src_box_preds,

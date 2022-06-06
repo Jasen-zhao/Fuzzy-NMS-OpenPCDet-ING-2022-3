@@ -25,7 +25,7 @@ def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
         
         #soft-nms
         # keep_idx, selected_scores = getattr(iou3d_nms_utils, "soft_nms")(
-        #         boxes_for_nms[:, 0:7], box_scores_nms, 0.8)#最后一个参数是score—nms
+        #         boxes_for_nms[:, 0:7], box_scores_nms, 0.65)#最后一个参数是score—nms
         
         #hard-nms-Diou (Diou:-1~1)
         keep_idx, selected_scores = getattr(iou3d_nms_utils, "hard_nms_Diou")(

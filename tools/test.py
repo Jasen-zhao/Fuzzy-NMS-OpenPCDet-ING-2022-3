@@ -19,7 +19,9 @@ from pcdet.models import build_network
 from pcdet.utils import common_utils
 import warnings
 
+
 from pcdet.models.model_utils.fuzzy_nms.model_nms_utils_cpp import _init_score_iou #roi使用fuzzy nms时，用来初始化
+
 
 warnings.filterwarnings("ignore")
 
@@ -65,8 +67,9 @@ def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id
     model.cuda()
     # print(next(model.parameters()).device)
 
-    # #原始代码,不进行遍历,但是可以在post_processing中切换nms
-    # _init_score_iou([0.1,0.1,0.3],[0.01,0.6,0.0])#fuzzy-nms使用
+    # 原始代码,不进行遍历,但是可以在post_processing中切换nms,
+    #_init_score_iou使用NMS时切换
+    # _init_score_iou([0.1,0.1,0.4],[0.1,0.5,0.0])										
     eval_utils.eval_one_epoch(
         cfg, model, test_loader, epoch_id, logger, dist_test=dist_test,
         result_dir=eval_output_dir, save_to_file=args.save_to_file
@@ -210,6 +213,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with torch.cuda.device(1):
+    with torch.cuda.device(3):
         main()
     # main()

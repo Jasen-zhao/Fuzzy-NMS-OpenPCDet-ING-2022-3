@@ -8,6 +8,7 @@ from . import kitti_utils
 from ...ops.roiaware_pool3d import roiaware_pool3d_utils
 from ...utils import box_utils, calibration_kitti, common_utils, object3d_kitti
 from ..dataset import DatasetTemplate
+from copy import deepcopy
 
 
 class KittiDataset(DatasetTemplate):
@@ -350,17 +351,61 @@ class KittiDataset(DatasetTemplate):
 
         return annos
 
+    #原始评估
     def evaluation(self, det_annos, class_names, **kwargs):
         if 'annos' not in self.kitti_infos[0].keys():
             return None, {}
+        from .kitti_object_eval_python import eval as kitti_eval
+        eval_det_annos = copy.deepcopy(det_annos)
+        eval_gt_annos = [copy.deepcopy(info['annos']) for info in self.kitti_infos]
+        ap_result_str, ap_dict = kitti_eval.get_official_eval_result(eval_gt_annos, eval_det_annos, class_names)
+        return ap_result_str, ap_dict
 
+
+    #按距离评估
+    def evaluation_unuse(self, det_annos, class_names, **kwargs):
+        import pdb
+        #按距离截断det和gt
+        def filter_range(dets, d_range,k1):
+            dets = deepcopy(dets)
+            if dets['location'].shape[0] == 0:
+                return dets
+            #截断
+            valid_idx = (np.abs(dets['location'][:, 2]) > d_range[0]) * (np.abs(dets['location'][:, 2]) <= d_range[1])
+            DontCare_mask=dets['name']!='DontCare' #获得非DontCare的下标
+            gt_idx=valid_idx[DontCare_mask]#为gt_boxes_lidar获得非DontCare截断
+            for k in dets:
+                if k == k1 :
+                    continue
+                try:
+                    if k=='gt_boxes_lidar':
+                        dets[k] = dets[k][gt_idx]
+                    else:
+                        dets[k] = dets[k][valid_idx]
+                except:
+                    print(dets[k], k)
+                    pdb.set_trace()
+                    raise
+            return dets
+        #开始评估
+        if 'annos' not in self.kitti_infos[0].keys():
+            return None, {}
         from .kitti_object_eval_python import eval as kitti_eval
 
         eval_det_annos = copy.deepcopy(det_annos)
         eval_gt_annos = [copy.deepcopy(info['annos']) for info in self.kitti_infos]
-        ap_result_str, ap_dict = kitti_eval.get_official_eval_result(eval_gt_annos, eval_det_annos, class_names)
 
+        #评估距离
+        range0 = [0,20]
+        range1 = [20,40]
+        range2 = [40,np.inf]
+        k = range2
+        dt_annos_range = [filter_range(dets1, k,'frame_id') for dets1 in eval_det_annos]#过滤det结果
+        gt_annos_range = [filter_range(dets2, k,'frame_id') for dets2 in eval_gt_annos]#过滤grougtruth
+        ap_result_str, ap_dict = kitti_eval.get_official_eval_result(gt_annos_range, dt_annos_range, class_names)
         return ap_result_str, ap_dict
+
+
 
     def __len__(self):
         if self._merge_all_iters_to_one_epoch:

@@ -5,6 +5,7 @@
 data/kitti/gt_database
 *.pyc
 venv/
+output/
 *.idea/
 *.so
 !pcdet/models/model_utils/fuzzy_code/libfuzzy.so

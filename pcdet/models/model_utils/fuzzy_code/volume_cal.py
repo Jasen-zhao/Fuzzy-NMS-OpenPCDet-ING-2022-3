@@ -17,6 +17,9 @@ def volume_cal(dxyz):#dxyz是框的长宽高
     #fac = 0.99 /max(volume)
     #volume= volume* fac
 
+    with open('volume.csv','ab') as f:
+        np.savetxt(f,volume, delimiter=',')#将数据保存成csv，保存在服务器...OpenPCDet/tools
+
     #np.savetxt('volume.csv', volume, delimiter=',')  # 将数据保存成csv，保存在服务器...OpenPCDet/tools
 
     return volume

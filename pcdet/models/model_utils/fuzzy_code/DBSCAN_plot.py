@@ -45,7 +45,9 @@ def DBSCAN_plot(X):
     density= density_count* fac
     #print("密度",density)
 
-    #np.savetxt('density.csv', density, delimiter=',')#将数据保存成csv，保存在服务器...OpenPCDet/tools
+    
+    with open('density.csv','ab') as f:
+        np.savetxt(f, density, delimiter=',')#将数据保存成csv，保存在服务器...OpenPCDet/tools
 
     #plot_DB(X,labels)#绘制图像
     return density

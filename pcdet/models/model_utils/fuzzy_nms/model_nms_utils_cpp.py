@@ -24,6 +24,7 @@ def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
     src_box_scores = box_scores #获取所有框的评分,box_scores是torch.Tensor类型
     if score_thresh is not None:#该部分保留即可，完全不影响过滤,因为一开始就过滤了
         scores_mask = (box_scores >= score_thresh)#获取大于阈值,由true和false组成,scores_mask是torch.Tensor类型
+        # scores_mask = (box_scores >= 0.05)#绘制聚类图像使用
         box_scores = box_scores[scores_mask]#只保留True的部分
         box_preds = box_preds[scores_mask]
 
@@ -36,30 +37,22 @@ def class_agnostic_nms(box_scores, box_preds, nms_config, score_thresh=None):
         #indices为选出来的值的下标，如[351, 350, 349, 348,....
         box_scores_nms, indices = torch.topk(box_scores, k=min(nms_config.NMS_PRE_MAXSIZE, box_scores.shape[0]))
         boxes_for_nms = box_preds[indices]
-        # print("boxes_for_nms.shape",boxes_for_nms.shape)
         #上面是根据得分过滤后得到的框和框的大小，从这里开始，下面计算体积和密度
         #添加部分
 
         #获取体积
         dxyz=boxes_for_nms[:, 3:6]
         box_pred_volume = volume_cal(dxyz.cpu().numpy())  #每个框的体积,.cpu().numpy()：转成numpy数据
-        #print("框的体积数量：",box_pred_volume.shape) #输出每个框
-        #print("框的体积：",box_pred_volume[:20])  # 输出每个框
-
 
         #获取密度
         data_xyz=boxes_for_nms[:,0:3]#获取所有框的坐标
         box_pred_density=DBSCAN_plot(data_xyz.cpu().numpy())#获得密度
-        #print("框的密度数量",box_pred_density.shape)
-        #print("框的密度", box_pred_density[:20])
 
         #由密度、体积获取各个框的分类(可以按分类在空间中绘制按类别的情况)
         box_pred_cls=cpp_cls(box_pred_volume,box_pred_density)
-        # print("框的类别数量", box_pred_cls.shape)
-        # print("框的类别", box_pred_cls[:20])
-        #plot_DB(data_xyz.cpu().numpy(),box_pred_cls)#绘制模糊分类后的情况
+        # plot_DB(data_xyz.cpu().numpy(),box_pred_cls,mode="save",path="fuzzy")#绘制模糊分类后的情况
+        # sys.exit(0) #正常退出程序
 
-        #sys.exit(0) #正常退出程序
 
         #对每个类别划分，得分和框
         # score_thresh_two=[0.45,0.01,0.15]#每个类别（0、1、2）的得分过滤，主要是对类别0过滤掉噪声

@@ -13,12 +13,8 @@ def volume_cal(dxyz):#dxyz是框的长宽高
     dz = dxyz[:, 2]  # 高
     volume = dx*dy*dz  # 每个框的体积,.cpu().numpy()：转成numpy数据
 
-    #归一化,(使其不严格为0，不严格为1)
-    #fac = 0.99 /max(volume)
-    #volume= volume* fac
-
-    with open('volume.csv','ab') as f:
-        np.savetxt(f,volume, delimiter=',')#将数据保存成csv，保存在服务器...OpenPCDet/tools
+    # with open('volume.csv','ab') as f:
+    #     np.savetxt(f,volume, delimiter=',')#将数据保存成csv，保存在服务器...OpenPCDet/tools
 
     #np.savetxt('volume.csv', volume, delimiter=',')  # 将数据保存成csv，保存在服务器...OpenPCDet/tools
 

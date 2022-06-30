@@ -3,6 +3,7 @@
 # @Author  : ZFC
 # @File    : DBSCAN_plot.py
 # @Task    :
+from cProfile import label
 import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
@@ -44,44 +45,52 @@ def DBSCAN_plot(X):
     fac = 0.99 /max_count
     density= density_count* fac
     #print("密度",density)
-
     
-    with open('density.csv','ab') as f:
-        np.savetxt(f, density, delimiter=',')#将数据保存成csv，保存在服务器...OpenPCDet/tools
+    # with open('density.csv','ab') as f:
+    #     np.savetxt(f, density, delimiter=',')#将数据保存成csv，保存在服务器...OpenPCDet/tools
 
-    #plot_DB(X,labels)#绘制图像
+    # plot_DB(X,labels,mode="save",path="DBSCAN")#绘制聚类图像
     return density
 
 
-def plot_DB(X,labels):#输入为原始坐标和标签
+def plot_DB(X,labels,mode="plot",path="none"):#输入为原始坐标和标签,mode="plot"是绘制图像，"save"是保存数据
+    #将数据保存到csv中，不再绘制
+    if mode=="save":
+        labels=labels.reshape(-1,1)#行转成列
+        merged=np.hstack((X,labels))#按列拼接
+        with open(path+'.csv','ab') as f:
+            np.savetxt(f, merged, delimiter=',')#将数据保存成csv，保存在服务器...OpenPCDet/tools
+
     # 绘制结果
-    fig = plt.figure(dpi=128, figsize=(8, 8))
-    ax = fig.add_subplot(111, projection='3d')
+    if mode=="plot":
+        fig = plt.figure(dpi=128, figsize=(8, 8))
+        ax = fig.add_subplot(111, projection='3d')
 
-    #绘制噪声的坐标
-    if -1 in labels:#有噪声时，噪声和非噪声分别绘制
-        class_noice_mask = (labels == -1)#获取噪声下标
-        xyz_noice = X[class_noice_mask]#获取噪声的原始坐标
-        ax.scatter(xyz_noice[:,0], xyz_noice[:,1],xyz_noice[:,2], c = 'k')#绘制噪声坐标，颜色为黑色
+        #绘制噪声的坐标
+        if -1 in labels:#有噪声时，噪声和非噪声分别绘制
+            class_noice_mask = (labels == -1)#获取噪声下标
+            xyz_noice = X[class_noice_mask]#获取噪声的原始坐标
+            ax.scatter(xyz_noice[:,0], xyz_noice[:,1],xyz_noice[:,2], c = 'k')#绘制噪声坐标，颜色为黑色
 
-        #绘制非噪声坐标
-        class_mask=~class_noice_mask #取反，获取非噪声下标
-        xyz = X[class_mask]  # 获取非噪声的原始坐标
-        labels=labels[class_mask]#获取非噪声的标签
-        ax.scatter(xyz[:,0], xyz[:,1],xyz[:,2], c=labels, cmap=plt.cm.Spectral)
-        plt.tick_params(labelsize=26)
+            #绘制非噪声坐标
+            class_mask=~class_noice_mask #取反，获取非噪声下标
+            xyz = X[class_mask]  # 获取非噪声的原始坐标
+            labels=labels[class_mask]#获取非噪声的标签
+            ax.scatter(xyz[:,0], xyz[:,1],xyz[:,2], c=labels, cmap=plt.cm.Spectral)
+            plt.tick_params(labelsize=26)
 
-        plt.title('DBSCAN result',fontsize=26)
-        plt.show()
-    else:#无噪声时，非噪声直接绘制
-        xyz = X  #获取非噪声的原始坐标
-        ax.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2], c=labels, cmap=plt.cm.Spectral)
-        plt.tick_params(labelsize=26)
+            plt.title('DBSCAN result',fontsize=26)
+            plt.savefig('DBSCAN result.png')
+            # plt.show()
+        else:#无噪声时，非噪声直接绘制
+            xyz = X  #获取非噪声的原始坐标
+            ax.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2], c=labels, cmap=plt.cm.Spectral)
+            plt.tick_params(labelsize=26)
 
-        plt.title('FUZZY result',fontsize=26)
-        plt.show()
-
-    #sys.exit(0)  # 正常退出程序
+            plt.title('FUZZY result',fontsize=26)
+            plt.savefig('FUZZY result.png')
+            # plt.show()
+    # sys.exit(0)  # 正常退出程序
 
 
 
